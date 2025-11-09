@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* QR Code Page */
+        .qr-page {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-page.active {
+            display: flex;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .qr-container h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .qr-container p {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .qr-info {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .qr-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .qr-info p {
+            color: #555;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        /* Verification Page - Like your screenshot */
+        .verification-page {
+            display: none;
+            min-height: 100vh;
+            background: #ffffff;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .verification-page.active {
+            display: flex;
+        }
+
+        .verify-btn {
+            padding: 15px 60px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+            transition: all 0.3s;
+        }
+
+        .verify-btn:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
+        }
+
+        /* Certificate Display Page */
+        .certificate-page {
+            display: none;
+            min-height: 100vh;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .certificate-page.active {
+            display: block;
+        }
+
+        .certificate-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .certificate-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 5px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #34495e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #2c3e50;
+        }
+
+        /* Navigation hint for testing */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .qr-container {
+                padding: 30px 20px;
+            }
+
+            .verify-btn {
+                padding: 12px 40px;
+                font-size: 16px;
+            }
+
+            .certificate-page {
+                padding: 20px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- QR Code Display Page -->
+    <div class="qr-page active" id="qrPage">
+        <div class="qr-container">
+            <h1>🎓 Certificate Verification</h1>
+            <p>Scan this QR code to verify the certificate</p>
+            <div id="qrcode"></div>
+            <div class="qr-info">
+                <h3>📱 How to use:</h3>
+                <p>1. Scan this QR code with your phone</p>
+                <p>2. Click "Course Certificate" button</p>
+                <p>3. View the verified certificate</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Page (Shows when QR is scanned) -->
+    <div class="verification-page" id="verificationPage">
+        <button class="verify-btn" onclick="showCertificate()">Course Certificate</button>
+    </div>
+
+    <!-- Certificate Display Page -->
+    <div class="certificate-page" id="certificatePage">
+        <div class="certificate-container">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <img id="certificateImage" class="certificate-image" alt="NPTEL Certificate">
+        </div>
+    </div>
+
+    <!-- Navigation hint (only visible during testing) -->
+    <div class="nav-hint" id="navHint" style="display: none;">
+        Testing mode - Normally users will scan QR code
+    </div>
+
+    <script>
+        // ============================================
+        // 🔧 CHANGE THIS - Put your certificate image path here
+        // ============================================
+        const CERTIFICATE_IMAGE_PATH = 'E:\Akshat E&TC\TY\Certificate\certificate.jpg';  // Change this to your image filename
+        
+        // Examples:
+        // 'certificate.jpg' - if image is in same folder as HTML
+        // 'images/certificate.jpg' - if image is in images folder
+        // 'C:/Users/YourName/Desktop/certificate.jpg' - full path (for local testing)
+        // ============================================
+
+        // Set certificate image
+        document.getElementById('certificateImage').src = CERTIFICATE_IMAGE_PATH;
+
+        // Generate QR Code with the actual URL
+        const currentUrl = window.location.href.split('?')[0];
+        const qrData = currentUrl + "?verify=true";
+        
+        const qrcodeInstance = new QRCode(document.getElementById("qrcode"), {
+            text: qrData,
+            width: 220,
+            height: 220,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Show certificate
+        function showCertificate() {
+            document.getElementById('verificationPage').classList.remove('active');
+            document.getElementById('certificatePage').classList.add('active');
+            document.getElementById('navHint').style.display = 'none';
+        }
+
+        // Go back to verification
+        function goBack() {
+            document.getElementById('certificatePage').classList.remove('active');
+            document.getElementById('verificationPage').classList.add('active');
+        }
+
+        // Check URL parameters on load
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const verify = urlParams.get('verify');
+            
+            if (verify === 'true') {
+                // QR code was scanned - show verification page
+                document.getElementById('qrPage').classList.remove('active');
+                document.getElementById('verificationPage').classList.add('active');
+                document.getElementById('navHint').style.display = 'block';
+            } else {
+                // Default - show QR code page
+                document.getElementById('qrPage').classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
